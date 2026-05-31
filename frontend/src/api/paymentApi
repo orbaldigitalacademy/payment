@@ -1,0 +1,54 @@
+import api from "./axios";
+
+/**
+ * INITIALIZE PAYMENT
+ */
+export const initializePayment =
+  async (paymentData) => {
+    const response =
+      await api.post(
+        "/payments/initialize",
+        paymentData
+      );
+
+    return response.data;
+  };
+
+/**
+ * VERIFY PAYMENT
+ */
+export const verifyPayment =
+  async (reference) => {
+    const response =
+      await api.get(
+        `/payments/verify/${reference}`
+      );
+
+    return response.data;
+  };
+
+/**
+ * GET PAYMENT HISTORY
+ */
+export const getPayments =
+  async () => {
+    const response =
+      await api.get(
+        "/payments"
+      );
+
+    return response.data;
+  };
+
+/**
+ * GET SINGLE PAYMENT
+ */
+export const getPaymentByReference =
+  async (reference) => {
+    const response =
+      await api.get(
+        `/payments/${reference}`
+      );
+
+    return response.data;
+  };

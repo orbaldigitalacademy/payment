@@ -1,0 +1,94 @@
+import api from "./axios";
+
+/**
+ * LOGIN ADMIN
+ */
+export const adminLogin =
+  async (credentials) => {
+    const response =
+      await api.post(
+        "/auth/login",
+        credentials
+      );
+
+    if (
+      response.data.token
+    ) {
+      localStorage.setItem(
+        "token",
+        response.data.token
+      );
+    }
+
+    return response.data;
+  };
+
+/**
+ * LOGOUT
+ */
+export const adminLogout =
+  () => {
+    localStorage.removeItem(
+      "token"
+    );
+  };
+
+/**
+ * GET DASHBOARD STATS
+ */
+export const getDashboardStats =
+  async () => {
+    const response =
+      await api.get(
+        "/admin/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem(
+              "token"
+            )}`,
+          },
+        }
+      );
+
+    return response.data;
+  };
+
+/**
+ * GET ENROLLMENTS
+ */
+export const getEnrollments =
+  async () => {
+    const response =
+      await api.get(
+        "/admin/enrollments",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem(
+              "token"
+            )}`,
+          },
+        }
+      );
+
+    return response.data;
+  };
+
+/**
+ * GET PAYMENTS
+ */
+export const getPaymentRecords =
+  async () => {
+    const response =
+      await api.get(
+        "/admin/payments",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem(
+              "token"
+            )}`,
+          },
+        }
+      );
+
+    return response.data;
+  };
