@@ -1,134 +1,153 @@
-const Course =
-  require("../models/Course");
+const bcrypt = require("bcryptjs");
+const Admin = require("../models/Admin");
+const Course = require("../models/Course");
+const Payment = require("../models/Payment");
+const Enrollment = require("../models/Enrollment");
 
-const Payment =
-  require("../models/Payment");
+/**
+ * Login Admin
+ */
+const loginAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-const Enrollment =
-  require("../models/Enrollment");
+    const admin = await Admin.findOne({ email });
+
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(
+      password,
+      admin.password
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
 /**
  * Dashboard Statistics
  */
-exports.getDashboardStats =
-  async (req, res) => {
-    try {
-      const totalCourses =
-        await Course.countDocuments();
+const getDashboardStats = async (req, res) => {
+  try {
+    const totalCourses = await Course.countDocuments();
 
-      const activeCourses =
-        await Course.countDocuments({
-          active: true,
-        });
+    const activeCourses = await Course.countDocuments({
+      active: true,
+    });
 
-      const totalPayments =
-        await Payment.countDocuments();
+    const totalPayments = await Payment.countDocuments();
 
-      const totalEnrollments =
-        await Enrollment.countDocuments();
+    const totalEnrollments = await Enrollment.countDocuments();
 
-      const revenueResult =
-        await Payment.aggregate([
-          {
-            $match: {
-              status: "success",
-            },
-          },
-          {
-            $group: {
-              _id: null,
-              totalRevenue: {
-                $sum: "$amount",
-              },
-            },
-          },
-        ]);
-
-      const totalRevenue =
-        revenueResult.length > 0
-          ? revenueResult[0]
-              .totalRevenue
-          : 0;
-
-      res.json({
-        success: true,
-        data: {
-          totalCourses,
-          activeCourses,
-          totalPayments,
-          totalEnrollments,
-          totalRevenue,
+    const revenueResult = await Payment.aggregate([
+      {
+        $match: { status: "success" },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$amount" },
         },
-      });
-    } catch (error) {
-      console.error(error);
+      },
+    ]);
 
-      res.status(500).json({
-        success: false,
-        message:
-          error.message,
-      });
-    }
-  };
+    const totalRevenue =
+      revenueResult.length > 0
+        ? revenueResult[0].totalRevenue
+        : 0;
+
+    res.json({
+      success: true,
+      data: {
+        totalCourses,
+        activeCourses,
+        totalPayments,
+        totalEnrollments,
+        totalRevenue,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 /**
  * Get Enrollments
  */
-exports.getEnrollments =
-  async (req, res) => {
-    try {
-      const enrollments =
-        await Enrollment.find()
-          .populate(
-            "courseId",
-            "title amount"
-          )
-          .sort({
-            createdAt: -1,
-          });
+const getEnrollments = async (req, res) => {
+  try {
+    const enrollments = await Enrollment.find()
+      .populate("courseId", "title amount")
+      .sort({ createdAt: -1 });
 
-      res.json({
-        success: true,
-        data: enrollments,
-      });
-    } catch (error) {
-      console.error(error);
-
-      res.status(500).json({
-        success: false,
-        message:
-          error.message,
-      });
-    }
-  };
+    res.json({
+      success: true,
+      data: enrollments,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 /**
  * Get Payments
  */
-exports.getPayments =
-  async (req, res) => {
-    try {
-      const payments =
-        await Payment.find()
-          .populate(
-            "courseId",
-            "title amount"
-          )
-          .sort({
-            createdAt: -1,
-          });
+const getPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find()
+      .populate("courseId", "title amount")
+      .sort({ createdAt: -1 });
 
-      res.json({
-        success: true,
-        data: payments,
-      });
-    } catch (error) {
-      console.error(error);
+    res.json({
+      success: true,
+      data: payments,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
-      res.status(500).json({
-        success: false,
-        message:
-          error.message,
-      });
-    }
-  };
+module.exports = {
+  loginAdmin,
+  getDashboardStats,
+  getEnrollments,
+  getPayments,
+};
