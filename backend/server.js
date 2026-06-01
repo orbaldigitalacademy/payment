@@ -15,7 +15,12 @@ require("./config/db");
 
 connectDB();
 
-app.use(cors({origin: ["http://localhost:5173","https://your-frontend-url.onrender.com"],credentials: true,}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use("/api/payments",paymentRoutes);
 app.use("/api/courses", courseRoutes);
