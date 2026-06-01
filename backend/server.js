@@ -21,11 +21,11 @@ app.use(
     credentials: true,
   })
 );
+app.use("/api/auth", authRoutes);
+app.use("/api/admin",adminRoutes);
 app.use(express.json());
 app.use("/api/payments",paymentRoutes);
 app.use("/api/courses", courseRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/admin",adminRoutes);
 
 app.listen(
  process.env.PORT,
